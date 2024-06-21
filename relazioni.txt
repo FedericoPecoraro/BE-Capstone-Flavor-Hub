@@ -1,0 +1,25 @@
+
+Libro  Autore m
+Autore Libro  m
+Relazione molti a molti
+
+Libro Categoria m
+Categoria Libro m
+Relazione molti a molti
+
+Libro CasaEditrice o
+CasaEditrice Libro m
+Relazione uno a molti
+
+Prestito Persona o
+Persona Prestito m
+Relazione OneToMany
+
+RegistroPrestitoLibro Libro o
+Libro RegistroPrestitoLibro m
+Relazione OneToMany
+
+RegistroPrestitoLibro RegistroPrestito o
+RegistroPrestito RegistroPrestitoLibro m
+Relazione OneToMany
+

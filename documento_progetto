@@ -1,0 +1,14 @@
+gestione libreria
+permette di registrare dei libri inserendo informazioni tipo l'autore e la casa editrice e la categoria
+la biblioteca puo prestare uno o piu libri ad una persona per cui e' necessario registrare sia la persona che il prestito.
+
+
+Libro (id, titolo, autore, casa editrice, categoria)
+Autore (id, nome, cognome)
+CasaEditrice (id, nome, indirizzo, citta, cap)
+Categoria (id, descrizione)
+
+
+Persona(id, nome, cognome, indirizzo, cap, citta, codicefiscale)
+RegistroPrestito(id, numeroPrestito, dataPrestito, Persona)
+RegistroPrestitoLibri(id, Libro, isRestituito, RegistroPrestito)

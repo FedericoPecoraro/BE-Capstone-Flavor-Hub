@@ -19,15 +19,25 @@ public class User{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 50)
     private String firstName;
-    @Column(length = 50, nullable = false)
+    @Column(length = 50)
     private String lastName;
     private String username;
     private String email;
-    @Column(length = 125, nullable = false)
+    @Column(length = 125)
     private String password;
     private String avatar;
     @ManyToMany(fetch = FetchType.EAGER)
     private final List<Roles> roles = new ArrayList<>();
+
+    public void anonymizeUser(){
+        this.firstName = null;
+        this.lastName = null;
+        this.username = null;
+        this.email = null;
+        this.password = null;
+        this.avatar = null;
+        this.roles.clear();
+    }
 }

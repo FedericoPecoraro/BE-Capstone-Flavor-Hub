@@ -9,17 +9,12 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 @Builder(setterPrefix = "with")
-public class RegisterUserDTO {
+public class UpdateUserDTO {
     @NotEmpty
     String firstName;
     @NotEmpty
     String lastName;
     @NotEmpty
-    String username;
-    @NotEmpty
     String email;
-    @NotEmpty
-    String password;
 
-    String avatar;
 }

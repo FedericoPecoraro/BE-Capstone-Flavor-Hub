@@ -9,6 +9,10 @@ import java.util.List;
 
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
+    // Get all recipes
+    @Query("SELECT r FROM Recipe r")
+    List<Recipe> findAllRecipes();
+
     // Find recipes by user
     List<Recipe> findByUser(User user);
 

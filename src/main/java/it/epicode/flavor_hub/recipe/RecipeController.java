@@ -1,8 +1,10 @@
 package it.epicode.flavor_hub.recipe;
 
+import it.epicode.flavor_hub.security.JwtUtils;
 import it.epicode.flavor_hub.tag.Tag;
 import it.epicode.flavor_hub.user.User;
 import it.epicode.flavor_hub.user.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,9 @@ public class RecipeController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private JwtUtils jwt;
+
     // Create Recipe
     @PostMapping
     public ResponseEntity<RecipeResponse> createRecipe(@Valid @RequestBody RecipeRequest recipeRequest) {
@@ -29,16 +34,32 @@ public class RecipeController {
 
     // Edit Recipe
     @PutMapping("/{id}")
-    public ResponseEntity<RecipeResponse> editRecipe(@PathVariable Long id, @RequestBody RecipeRequest recipeRequest) {
-        RecipeResponse updatedRecipe = recipeService.editRecipe(id, recipeRequest);
+    public ResponseEntity<RecipeResponse> editRecipe(@PathVariable Long id, @RequestBody RecipeRequest recipeRequest, HttpServletRequest request) {
+
+        RecipeResponse updatedRecipe = recipeService.editRecipe(id, recipeRequest, jwt.getUserFromRequest(request));
         return ResponseEntity.ok(updatedRecipe);
     }
 
+//    // Delete Recipe
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<String> deleteRecipe(@PathVariable Long id) {
+//        String response = recipeService.deleteRecipe(id);
+//        return ResponseEntity.ok(response);
+//    }
+
     // Delete Recipe
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteRecipe(@PathVariable Long id) {
-        String response = recipeService.deleteRecipe(id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<String> deleteRecipe(@PathVariable Long id, HttpServletRequest request) {
+        User loggedUser = jwt.getUserFromRequest(request);
+        recipeService.deleteRecipe(id, loggedUser);
+        return ResponseEntity.ok("Ricetta eliminata con successo");
+    }
+
+    // Get All Recipes
+    @GetMapping
+    public ResponseEntity<List<RecipeResponse>> getAllRecipes() {
+        List<RecipeResponse> recipes = recipeService.getAllRecipes();
+        return ResponseEntity.ok(recipes);
     }
 
     // Get Recipe by Name

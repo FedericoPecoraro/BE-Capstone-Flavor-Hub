@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -18,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -39,6 +41,7 @@ public class UserService {
     private final JwtUtils jwt;
     private final EmailService emailService; // per gestire invio email di benvenuto
     private final Cloudinary cloudinary; // gestisce cloudinary
+    private final UserMapper userMapper;
 
     @Value("${spring.servlet.multipart.max-file-size}")
     private String maxFileSize;
@@ -81,11 +84,11 @@ public class UserService {
         }
     }
 
-    public RegisteredUserDTO register(RegisterUserDTO register){
-        if(usersRepository.existsByUsername(register.getUsername())){
+    public RegisteredUserDTO register(RegisterUserDTO register) {
+        if (usersRepository.existsByUsername(register.getUsername())) {
             throw new EntityExistsException("Utente gia' esistente");
         }
-        if(usersRepository.existsByEmail(register.getEmail())){
+        if (usersRepository.existsByEmail(register.getEmail())) {
             throw new EntityExistsException("Email gia' registrata");
         }
         Roles roles = rolesRepository.findById(Roles.ROLES_USER).get();
@@ -106,16 +109,16 @@ public class UserService {
         RegisteredUserDTO response = new RegisteredUserDTO();
         BeanUtils.copyProperties(u, response);
         response.setRoles(List.of(roles));
-      //  emailService.sendWelcomeEmail(u.getEmail());
+        //  emailService.sendWelcomeEmail(u.getEmail());
 
         return response;
     }
 
-    public RegisteredUserDTO registerAdmin(RegisterUserDTO register){
-        if(usersRepository.existsByUsername(register.getUsername())){
+    public RegisteredUserDTO registerAdmin(RegisterUserDTO register) {
+        if (usersRepository.existsByUsername(register.getUsername())) {
             throw new EntityExistsException("Utente gia' esistente");
         }
-        if(usersRepository.existsByEmail(register.getEmail())){
+        if (usersRepository.existsByEmail(register.getEmail())) {
             throw new EntityExistsException("Email gia' registrata");
         }
         Roles roles = rolesRepository.findById(Roles.ROLES_ADMIN).get();
@@ -147,7 +150,23 @@ public class UserService {
         }
 
         // Cancella l'utente
-        usersRepository.delete(user);
+        //usersRepository.delete(user);
+        //ANONIMIZZAZIONE UTENTE
+        // Tutti i dati personali dell'utente verranno
+        // cancellati ma non le ricette ad esso collegate
+
+        user.anonymizeUser();
+        usersRepository.save(user);
+    }
+
+    public RegisteredUserDTO updateUser(Long id, UpdateUserDTO updatedUser, User loggedUser) {
+        User user = usersRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+
+        jwt.checkUserLoggedEqualOrAdmin(user, loggedUser);
+        userMapper.updateUser(user, updatedUser);
+        usersRepository.save(user);
+        return userMapper.entityToDto(user);
     }
 
     public List<RegisteredUserDTO> getAllUsers() {

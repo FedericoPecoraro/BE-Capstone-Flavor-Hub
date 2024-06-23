@@ -2,6 +2,7 @@ package it.epicode.flavor_hub.recipe;
 
 import it.epicode.flavor_hub.ingredient.Ingredient;
 import it.epicode.flavor_hub.ingredient.IngredientRepository;
+import it.epicode.flavor_hub.security.JwtUtils;
 import it.epicode.flavor_hub.user.UserRepository;
 import it.epicode.flavor_hub.tag.Tag;
 import it.epicode.flavor_hub.user.User;
@@ -47,49 +48,59 @@ public class RecipeService {
     @Autowired
     private Cloudinary cloudinary;
 
+    @Autowired
+    private JwtUtils jwt;
+
     // Create Recipe
     @Transactional
     public RecipeResponse createRecipe(@Valid RecipeRequest recipeRequest) {
-        Recipe entity = new Recipe();
-        BeanUtils.copyProperties(recipeRequest, entity);
-
-        List<Ingredient> ingredients = ingredientRepository.findAllById(recipeRequest.getIngredientIds());
-        entity.setIngredients(ingredients);
-
-        Optional<User> user = userRepository.findById(recipeRequest.getUserId());
-        user.ifPresent(entity::setUser);
-
-        if (!CollectionUtils.isEmpty(recipeRequest.getUtensilIds())) {
-            entity.setUtensils(utensilRepository.findAllById(recipeRequest.getUtensilIds()));
-        }
-        if (!CollectionUtils.isEmpty(recipeRequest.getTagIds())){
-            entity.setTags(tagRepository.findAllById(recipeRequest.getTagIds()));
-        }
-
+        Recipe entity = recipeMapper.dtoToEntity(recipeRequest);
         repository.save(entity);
         return recipeMapper.entityToDto(entity);
     }
 
     // Edit Recipe
-    public RecipeResponse editRecipe(Long id, RecipeRequest recipeRequest) {
-        if (!repository.existsById(id)) {
+    @Transactional
+    public RecipeResponse editRecipe(Long id, RecipeRequest recipeRequest, User loggedUser) {
+        Optional<Recipe> entityOptional = repository.findById(id);
+        if (entityOptional.isEmpty()) {
             throw new EntityNotFoundException("Ricetta non trovata");
         }
-        Recipe entity = repository.findById(id).get();
-        BeanUtils.copyProperties(recipeRequest, entity);
+        Recipe entity = entityOptional.get();
+        jwt.checkUserLoggedEqualOrAdmin(entity.getUser(), loggedUser);
+        recipeMapper.updateRecipe(entity, recipeRequest);
         repository.save(entity);
-        RecipeResponse recipeResponse = new RecipeResponse();
-        BeanUtils.copyProperties(entity, recipeResponse);
-        return recipeResponse;
+
+        return recipeMapper.entityToDto(entity);
     }
 
+//    // Delete Recipe
+//    public String deleteRecipe(Long id) {
+//        if (!repository.existsById(id)) {
+//            throw new EntityNotFoundException("Ricetta non trovata");
+//        }
+//        repository.deleteById(id);
+//        return "Ricetta eliminata correttamente";
+//    }
+
     // Delete Recipe
-    public String deleteRecipe(Long id) {
-        if (!repository.existsById(id)) {
+    @Transactional
+    public void deleteRecipe(Long id, User loggedUser) {
+        Optional<Recipe> entityOptional = repository.findById(id);
+        if (entityOptional.isEmpty()) {
             throw new EntityNotFoundException("Ricetta non trovata");
         }
-        repository.deleteById(id);
-        return "Ricetta eliminata correttamente";
+        Recipe entity = entityOptional.get();
+        jwt.checkUserLoggedEqualOrAdmin(entity.getUser(), loggedUser);
+        repository.delete(entity);
+    }
+
+    // Get All Recipes
+    public List<RecipeResponse> getAllRecipes() {
+        List<Recipe> recipes = repository.findAll();
+        return recipes.stream()
+                .map(recipeMapper::entityToDto)
+                .collect(Collectors.toList());
     }
 
     // Get Recipe by Name

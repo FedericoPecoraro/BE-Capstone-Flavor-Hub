@@ -4,13 +4,21 @@ package it.epicode.flavor_hub.security;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import it.epicode.flavor_hub.user.User;
+import it.epicode.flavor_hub.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
+import java.util.Objects;
 
 //CLASSE CHE GENERA E CONTROLLA IL TOKEN (JWT)
 @Component
@@ -20,6 +28,9 @@ public class JwtUtils {
     private String securityKey;
     @Value("${jwt.expirationMs}")
     private long expirationMs;
+
+    @Autowired
+    UserRepository usersRepository;
 
     public String generateToken(Authentication auth) {
         byte[] keyBytes = securityKey.getBytes();
@@ -68,5 +79,25 @@ public class JwtUtils {
         return Jwts.parser()
                 .verifyWith(key).build()
                 .parseSignedClaims(token).getPayload().getSubject();
+    }
+
+    public User getUserFromToken(String token) {
+        String username = getUsernameFromToken(token);
+        return  usersRepository.findOneByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + username));
+    }
+
+    public User getUserFromRequest(HttpServletRequest request) {
+        String token = Objects.requireNonNull(request.getHeader("Authorization")).replace("Bearer ", "");
+        String username = getUsernameFromToken(token);
+        return  usersRepository.findOneByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + username));
+    }
+
+    public void checkUserLoggedEqualOrAdmin(User user, User loggedUser){
+        if (!user.equals(loggedUser) && loggedUser.getRoles().stream()
+                .noneMatch(roles -> roles.getRoleType().equals(Roles.ROLES_ADMIN))) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Forbidden");
+        }
     }
 }

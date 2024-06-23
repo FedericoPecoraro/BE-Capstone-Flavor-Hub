@@ -134,10 +134,10 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id, User loggedUser) {
         User user = usersRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
-
+        jwt.checkUserLoggedEqualOrAdmin(user, loggedUser);
         // Rimuovi l'avatar se presente
         String publicId = user.getAvatar();
         if (publicId != null && !publicId.isEmpty()) {

@@ -63,9 +63,9 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id, HttpServletRequest request) {
         try {
-            user.deleteUser(id);
+            user.deleteUser(id, jwtUtils.getUserFromRequest(request));
             return ResponseEntity.noContent().build();
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();

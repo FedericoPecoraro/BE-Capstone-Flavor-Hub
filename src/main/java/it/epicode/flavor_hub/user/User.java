@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -34,7 +35,7 @@ public class User{
     public void anonymizeUser(){
         this.firstName = null;
         this.lastName = null;
-        this.username = null;
+        this.username = UUID.randomUUID().toString();
         this.email = null;
         this.password = null;
         this.avatar = null;

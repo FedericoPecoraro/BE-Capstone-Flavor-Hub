@@ -1,13 +1,11 @@
 package it.epicode.flavor_hub.recipe;
 
-import it.epicode.flavor_hub.ingredient.Ingredient;
 import it.epicode.flavor_hub.ingredient.IngredientRepository;
 import it.epicode.flavor_hub.security.JwtUtils;
 import it.epicode.flavor_hub.user.UserRepository;
 import it.epicode.flavor_hub.tag.Tag;
 import it.epicode.flavor_hub.user.User;
 import it.epicode.flavor_hub.tag.TagRepository;
-import it.epicode.flavor_hub.utensil.Utensil;
 import it.epicode.flavor_hub.utensil.UtensilRepository;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
@@ -17,7 +15,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
@@ -92,25 +89,23 @@ public class RecipeService {
         }
         Recipe entity = entityOptional.get();
         jwt.checkUserLoggedEqualOrAdmin(entity.getUser(), loggedUser);
+        entity.getIngredients().clear();
+        entity.getUtensils().clear();
+        entity.getTags().clear();
+        repository.save(entity);
         repository.delete(entity);
     }
 
     // Get All Recipes
     public List<RecipeResponse> getAllRecipes() {
         List<Recipe> recipes = repository.findAll();
-        return recipes.stream()
-                .map(recipeMapper::entityToDto)
-                .collect(Collectors.toList());
+        return recipeMapper.entitiesToDtos(recipes);
     }
 
     // Get Recipe by Name
     public List<RecipeResponse> getRecipeByName(String query) {
-        List<Recipe> recipes = repository.searchByTitleOrIngredients(query);
-        return recipes.stream().map(recipe -> {
-            RecipeResponse recipeResponse = new RecipeResponse();
-            BeanUtils.copyProperties(recipe, recipeResponse);
-            return recipeResponse;
-        }).collect(Collectors.toList());
+        List<Recipe> recipes = repository.fullTextSearchRecipe(query.toLowerCase());
+        return recipeMapper.entitiesToDtos(recipes);
     }
 
     // Get Recipe by User

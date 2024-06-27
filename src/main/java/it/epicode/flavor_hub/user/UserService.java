@@ -4,6 +4,8 @@ package it.epicode.flavor_hub.user;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import it.epicode.flavor_hub.email.EmailService;
+import it.epicode.flavor_hub.recipe.Recipe;
+import it.epicode.flavor_hub.recipe.RecipeRepository;
 import it.epicode.flavor_hub.security.*;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,7 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
-
+    private final RecipeRepository recipesRepository;
     private final PasswordEncoder encoder;
     private final UserRepository usersRepository;
     private final RolesRepository rolesRepository;
@@ -254,4 +256,27 @@ public class UserService {
         return usersRepository.findOneByUsername(username);
     }
 
+    @Transactional
+    public void likeRecipe(Long userId, Long recipeId) {
+        User user = usersRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+        Recipe recipe = recipesRepository.findById(recipeId)
+                .orElseThrow(() -> new EntityNotFoundException("Recipe not found with id: " + recipeId));
+
+        if (!user.getLikedRecipes().contains(recipe) && !recipe.getUser().getId().equals(userId)) {
+            user.getLikedRecipes().add(recipe);
+            usersRepository.save(user);
+        }
+    }
+
+    @Transactional
+    public void unlikeRecipe(Long userId, Long recipeId) {
+        User user = usersRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+        Recipe recipe = recipesRepository.findById(recipeId)
+                .orElseThrow(() -> new EntityNotFoundException("Recipe not found with id: " + recipeId));
+
+        user.getLikedRecipes().remove(recipe);
+        usersRepository.save(user);
+    }
 }

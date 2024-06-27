@@ -1,12 +1,11 @@
 package it.epicode.flavor_hub.user;
 
+import it.epicode.flavor_hub.recipe.Recipe;
 import it.epicode.flavor_hub.security.Roles;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -29,8 +28,18 @@ public class User{
     @Column(length = 125)
     private String password;
     private String avatar;
+
     @ManyToMany(fetch = FetchType.EAGER)
     private final List<Roles> roles = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_liked_recipe",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "recipe_id")
+    )
+    private List<Recipe> likedRecipes = new ArrayList<>();
+
 
     public void anonymizeUser(){
         this.firstName = null;

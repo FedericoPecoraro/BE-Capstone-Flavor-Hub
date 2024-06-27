@@ -1,6 +1,7 @@
 package it.epicode.flavor_hub.user;
 
 import com.cloudinary.Cloudinary;
+import it.epicode.flavor_hub.recipe.LikeRecipeRequest;
 import it.epicode.flavor_hub.security.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -121,6 +122,18 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Avatar not found");
         }
+    }
+
+    @PostMapping("/like")
+    public ResponseEntity<Void> likeRecipe(@RequestBody LikeRecipeRequest likeRecipeRequest) {
+        user.likeRecipe(likeRecipeRequest.getUserId(), likeRecipeRequest.getRecipeId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/like")
+    public ResponseEntity<Void> unlikeRecipe(@RequestBody LikeRecipeRequest likeRecipeRequest) {
+        user.unlikeRecipe(likeRecipeRequest.getUserId(), likeRecipeRequest.getRecipeId());
+        return ResponseEntity.noContent().build();
     }
 }
 

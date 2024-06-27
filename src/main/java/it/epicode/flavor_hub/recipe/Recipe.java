@@ -7,7 +7,10 @@ import it.epicode.flavor_hub.utensil.Utensil;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -47,4 +50,7 @@ public class Recipe {
             joinColumns = @JoinColumn(name = "recipe_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<Tag> tags;
+
+    @ManyToMany(mappedBy = "likedRecipes")
+    private List<User> likedByUsers;
 }

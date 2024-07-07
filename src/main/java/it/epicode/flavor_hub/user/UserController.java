@@ -1,6 +1,7 @@
 package it.epicode.flavor_hub.user;
 
 import com.cloudinary.Cloudinary;
+//import it.epicode.flavor_hub.email.EmailService;
 import it.epicode.flavor_hub.recipe.LikeRecipeRequest;
 import it.epicode.flavor_hub.security.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -14,7 +15,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -32,6 +32,8 @@ public class UserController {
     private Cloudinary cloudinary;
     @Autowired
     private JwtUtils jwtUtils;
+//    @Autowired
+//    private EmailService emailService;
 
     @PostMapping
     public ResponseEntity<RegisteredUserDTO> register(@RequestBody @Validated RegisterUserModel model, BindingResult validator) {
@@ -46,6 +48,9 @@ public class UserController {
                         .withEmail(model.email())
                         .withPassword(model.password())
                         .build());
+
+        // Invia email di benvenuto
+//        emailService.sendWelcomeEmail(model.email());
 
         return new ResponseEntity<>(registeredUser, HttpStatus.OK);
     }
@@ -125,15 +130,14 @@ public class UserController {
     }
 
     @PostMapping("/like")
-    public ResponseEntity<Void> likeRecipe(@RequestBody LikeRecipeRequest likeRecipeRequest) {
-        user.likeRecipe(likeRecipeRequest.getUserId(), likeRecipeRequest.getRecipeId());
+    public ResponseEntity<Void> likeRecipe(@RequestBody LikeRecipeRequest likeRecipeRequest, HttpServletRequest request) {
+        user.likeRecipe(likeRecipeRequest.getUserId(), likeRecipeRequest.getRecipeId(), jwtUtils.getUserFromRequest(request));
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/like")
-    public ResponseEntity<Void> unlikeRecipe(@RequestBody LikeRecipeRequest likeRecipeRequest) {
-        user.unlikeRecipe(likeRecipeRequest.getUserId(), likeRecipeRequest.getRecipeId());
+    public ResponseEntity<Void> unlikeRecipe(@RequestBody LikeRecipeRequest likeRecipeRequest, HttpServletRequest request) {
+        user.unlikeRecipe(likeRecipeRequest.getUserId(), likeRecipeRequest.getRecipeId(), jwtUtils.getUserFromRequest(request));
         return ResponseEntity.noContent().build();
     }
 }
-

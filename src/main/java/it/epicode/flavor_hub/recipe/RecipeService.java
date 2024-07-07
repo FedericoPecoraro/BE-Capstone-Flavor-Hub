@@ -26,25 +26,18 @@ public class RecipeService {
 
     @Autowired
     private RecipeRepository repository;
-
     @Autowired
     private RecipeMapper recipeMapper;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private IngredientRepository ingredientRepository;
-
     @Autowired
     private TagRepository tagRepository;
-
     @Autowired
     private UtensilRepository utensilRepository;
-
     @Autowired
     private Cloudinary cloudinary;
-
     @Autowired
     private JwtUtils jwt;
 
@@ -70,15 +63,6 @@ public class RecipeService {
 
         return recipeMapper.entityToDto(entity);
     }
-
-//    // Delete Recipe
-//    public String deleteRecipe(Long id) {
-//        if (!repository.existsById(id)) {
-//            throw new EntityNotFoundException("Ricetta non trovata");
-//        }
-//        repository.deleteById(id);
-//        return "Ricetta eliminata correttamente";
-//    }
 
     // Delete Recipe
     @Transactional
@@ -119,7 +103,9 @@ public class RecipeService {
     }
 
     // Get Recipe by Tag
-    public List<RecipeResponse> getRecipesByTag(Tag tag) {
+    public List<RecipeResponse> getRecipesByTagId(Long tagId) {
+        Tag tag = tagRepository.findById(tagId)
+                .orElseThrow(() -> new EntityNotFoundException("Tag not found with id: " + tagId));
         List<Recipe> recipes = repository.findByTag(tag);
         return recipes.stream().map(recipe -> {
             RecipeResponse recipeResponse = new RecipeResponse();

@@ -18,12 +18,14 @@ public class RecipeController {
 
     @Autowired
     private RecipeService recipeService;
-
     @Autowired
     private UserService userService;
-
     @Autowired
     private JwtUtils jwt;
+
+    private final Long VEGAN_TAG_ID = 1L;
+    private final Long VEGETARIAN_TAG_ID = 2L;
+    private final Long GLUTEN_FREE_TAG_ID = 3L;
 
     // Create Recipe
     @PostMapping
@@ -39,13 +41,6 @@ public class RecipeController {
         RecipeResponse updatedRecipe = recipeService.editRecipe(id, recipeRequest, jwt.getUserFromRequest(request));
         return ResponseEntity.ok(updatedRecipe);
     }
-
-//    // Delete Recipe
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<String> deleteRecipe(@PathVariable Long id) {
-//        String response = recipeService.deleteRecipe(id);
-//        return ResponseEntity.ok(response);
-//    }
 
     // Delete Recipe
     @DeleteMapping("/{id}")
@@ -79,8 +74,26 @@ public class RecipeController {
 
     // Get Recipe by Tag
     @GetMapping("/searchByTag")
-    public ResponseEntity<List<RecipeResponse>> getRecipesByTag(@RequestParam Tag tag) {
-        List<RecipeResponse> recipes = recipeService.getRecipesByTag(tag);
+    public ResponseEntity<List<RecipeResponse>> getRecipesByTag(@RequestParam Long tagId) {
+        List<RecipeResponse> recipes = recipeService.getRecipesByTagId(tagId);
+        return ResponseEntity.ok(recipes);
+    }
+
+    @GetMapping("/vegan")
+    public ResponseEntity<List<RecipeResponse>> getVeganRecipes() {
+        List<RecipeResponse> recipes = recipeService.getRecipesByTagId(VEGAN_TAG_ID);
+        return ResponseEntity.ok(recipes);
+    }
+
+    @GetMapping("/vegetarian")
+    public ResponseEntity<List<RecipeResponse>> getVegetarianRecipes() {
+        List<RecipeResponse> recipes = recipeService.getRecipesByTagId(VEGETARIAN_TAG_ID);
+        return ResponseEntity.ok(recipes);
+    }
+
+    @GetMapping("/glutenFree")
+    public ResponseEntity<List<RecipeResponse>> getGlutenFreeRecipes() {
+        List<RecipeResponse> recipes = recipeService.getRecipesByTagId(GLUTEN_FREE_TAG_ID);
         return ResponseEntity.ok(recipes);
     }
 

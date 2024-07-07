@@ -4,7 +4,6 @@ import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,10 +26,5 @@ public class CloudinaryConfig {
         config.put("api_key", apiKey);
         config.put("api_secret", apiSecret);
         return new Cloudinary(config);
-
-
     }
-
 }
-
-

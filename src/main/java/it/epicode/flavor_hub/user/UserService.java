@@ -1,6 +1,5 @@
 package it.epicode.flavor_hub.user;
 
-
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import it.epicode.flavor_hub.email.EmailService;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +109,7 @@ public class UserService {
         RegisteredUserDTO response = new RegisteredUserDTO();
         BeanUtils.copyProperties(u, response);
         response.setRoles(List.of(roles));
-        //  emailService.sendWelcomeEmail(u.getEmail());
+        emailService.sendWelcomeEmail(u.getEmail());
 
         return response;
     }
@@ -207,9 +205,7 @@ public class UserService {
         return url;
     }
 
-
 // DELETE delete cloudinary file
-
     @Transactional
     public String deleteAvatar(Long id) throws IOException {
         Optional<User> optionalUser = usersRepository.findById(id);
@@ -257,11 +253,14 @@ public class UserService {
     }
 
     @Transactional
-    public void likeRecipe(Long userId, Long recipeId) {
+    public void likeRecipe(Long userId, Long recipeId, User loggedUser) {
         User user = usersRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         Recipe recipe = recipesRepository.findById(recipeId)
                 .orElseThrow(() -> new EntityNotFoundException("Recipe not found with id: " + recipeId));
+
+        // Controllo dell'utente loggato o amministratore
+        jwt.checkUserLoggedEqualOrAdmin(user, loggedUser);
 
         if (!user.getLikedRecipes().contains(recipe) && !recipe.getUser().getId().equals(userId)) {
             user.getLikedRecipes().add(recipe);
@@ -270,11 +269,14 @@ public class UserService {
     }
 
     @Transactional
-    public void unlikeRecipe(Long userId, Long recipeId) {
+    public void unlikeRecipe(Long userId, Long recipeId, User loggedUser) {
         User user = usersRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         Recipe recipe = recipesRepository.findById(recipeId)
                 .orElseThrow(() -> new EntityNotFoundException("Recipe not found with id: " + recipeId));
+
+        // Controllo dell'utente loggato o amministratore
+        jwt.checkUserLoggedEqualOrAdmin(user, loggedUser);
 
         user.getLikedRecipes().remove(recipe);
         usersRepository.save(user);

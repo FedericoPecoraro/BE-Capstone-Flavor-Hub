@@ -62,7 +62,7 @@ public class ApplicationSecurityConfig {
                                         .requestMatchers("/users/registerAdmin").permitAll() // DA CANCELLARE DOPO AVER CREATO L'ADMIN
                                         .requestMatchers(HttpMethod.PUT, "/users/{id}").authenticated() //SOLO UN UTENTE AUTENTICATO PUO MODIFICARE I SUOI DATI
                                         .requestMatchers(HttpMethod.DELETE, "/users/{id}").authenticated() //SOLO UN UTENTE AUTENTICATO PUO MODIFICARE I SUOI DATI
-                                        .requestMatchers(HttpMethod.GET, "/recipes").permitAll()
+                                        .requestMatchers(HttpMethod.GET, "/recipes/**").permitAll()
                                         .requestMatchers(HttpMethod.PUT, "/recipes/{id}").authenticated() //SOLO UN UTENTE AUTENTICATO PUO MODIFICARE I SUOI DATI
                                         .requestMatchers(HttpMethod.DELETE, "/recipes/{id}").authenticated() //SOLO UN UTENTE AUTENTICATO PUO MODIFICARE I SUOI DATI
                                         .requestMatchers(HttpMethod.POST, "/users").permitAll() //ENDPOINT DI REGISTRAZIONE APERTO A TUTTI
@@ -84,29 +84,28 @@ public class ApplicationSecurityConfig {
     }
 
     @Bean
-    public JavaMailSenderImpl getJavaMailSender(@Value("${gmail.mail.transport.protocol}" )String protocol,
-                                                @Value("${gmail.mail.smtp.auth}" ) String auth,
-                                                @Value("${gmail.mail.smtp.starttls.enable}" )String starttls,
-                                                @Value("${gmail.mail.debug}" )String debug,
-                                                @Value("${gmail.mail.from}" )String from,
-                                                @Value("${gmail.mail.from.password}" )String password,
-                                                @Value("${gmail.smtp.ssl.enable}" )String ssl,
-                                                @Value("${gmail.smtp.host}" )String host,
-                                                @Value("${gmail.smtp.port}" )String port){
+    public JavaMailSenderImpl getJavaMailSender(@Value("${spring.mail.host}") String host,
+                                            @Value("${spring.mail.port}") int port,
+                                            @Value("${spring.mail.username}") String username,
+                                            @Value("${spring.mail.password}") String password,
+                                            @Value("${spring.mail.properties.mail.smtp.auth}") String auth,
+                                            @Value("${spring.mail.properties.mail.smtp.starttls.enable}") String starttls,
+                                            @Value("${spring.mail.properties.mail.smtp.connectiontimeout}") String connectionTimeout,
+                                            @Value("${spring.mail.properties.mail.smtp.timeout}") String timeout,
+                                            @Value("${spring.mail.properties.mail.smtp.writetimeout}") String writeTimeout) {
 
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost(host);
-        mailSender.setPort(Integer.parseInt(port));
-
-        mailSender.setUsername(from);
+        mailSender.setPort(port);
+        mailSender.setUsername(username);
         mailSender.setPassword(password);
 
         Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.transport.protocol", protocol);
         props.put("mail.smtp.auth", auth);
         props.put("mail.smtp.starttls.enable", starttls);
-        props.put("mail.debug", debug);
-        props.put("smtp.ssl.enable",ssl);
+        props.put("mail.smtp.connectiontimeout", connectionTimeout);
+        props.put("mail.smtp.timeout", timeout);
+        props.put("mail.smtp.writetimeout", writeTimeout);
 
         return mailSender;
     }

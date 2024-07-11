@@ -1,9 +1,12 @@
 package it.epicode.flavor_hub.recipe;
 
+import it.epicode.flavor_hub.ingredient.IngredientResponse;
 import it.epicode.flavor_hub.security.JwtUtils;
 import it.epicode.flavor_hub.tag.Tag;
+import it.epicode.flavor_hub.tag.TagResponse;
 import it.epicode.flavor_hub.user.User;
 import it.epicode.flavor_hub.user.UserService;
+import it.epicode.flavor_hub.utensil.UtensilResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +58,41 @@ public class RecipeController {
     public ResponseEntity<List<RecipeResponse>> getAllRecipes() {
         List<RecipeResponse> recipes = recipeService.getAllRecipes();
         return ResponseEntity.ok(recipes);
+    }
+
+    @GetMapping("/user/recipes")
+    public ResponseEntity<List<RecipeResponse>> getRecipesByLoggedUser(HttpServletRequest request) {
+        User loggedUser = jwt.getUserFromRequest(request);
+        List<RecipeResponse> recipes = recipeService.getRecipesByUser(loggedUser);
+        return ResponseEntity.ok(recipes);
+    }
+
+
+
+    // Aggiungi questo metodo al RecipeController
+    @GetMapping("/{id}")
+    public ResponseEntity<RecipeResponse> getRecipeById(@PathVariable Long id) {
+        RecipeResponse recipe = recipeService.getRecipeById(id);
+        return ResponseEntity.ok(recipe);
+    }
+
+
+    @GetMapping("/ingredients")
+    public ResponseEntity<List<IngredientResponse>> getIngredients() {
+        List<IngredientResponse> ingredients = recipeService.getAllIngredients();
+        return ResponseEntity.ok(ingredients);
+    }
+
+    @GetMapping("/utensils")
+    public ResponseEntity<List<UtensilResponse>> getUtensils() {
+        List<UtensilResponse> utensils = recipeService.getAllUtensils();
+        return ResponseEntity.ok(utensils);
+    }
+
+    @GetMapping("/tags")
+    public ResponseEntity<List<TagResponse>> getTags() {
+        List<TagResponse> tags = recipeService.getAllTags();
+        return ResponseEntity.ok(tags);
     }
 
     // Get Recipe by Name

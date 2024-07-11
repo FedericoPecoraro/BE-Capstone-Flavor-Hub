@@ -3,12 +3,13 @@ package it.epicode.flavor_hub.user;
 import com.cloudinary.Cloudinary;
 //import it.epicode.flavor_hub.email.EmailService;
 import it.epicode.flavor_hub.recipe.LikeRecipeRequest;
+import it.epicode.flavor_hub.recipe.Recipe;
 import it.epicode.flavor_hub.security.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -17,21 +18,28 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @RestController
+@Slf4j
 @RequestMapping("/users")
 public class UserController {
 
     @Autowired
     private UserService user;
+
     @Autowired
     private UserRepository usersRepository;
+
     @Autowired
     private Cloudinary cloudinary;
+
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private UserMapper userMapper;
+
 //    @Autowired
 //    private EmailService emailService;
 
@@ -87,6 +95,13 @@ public class UserController {
         }
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<RegisteredUserDTO> getLoggedInUser(HttpServletRequest request) {
+        User loggedUser = jwtUtils.getUserFromRequest(request);
+        RegisteredUserDTO userDto = userMapper.entityToDto(loggedUser);
+        return ResponseEntity.ok(userDto);
+    }
+
     @GetMapping
     public ResponseEntity<List<RegisteredUserDTO>> getAllUsers() {
         List<RegisteredUserDTO> users = user.getAllUsers();
@@ -131,13 +146,28 @@ public class UserController {
 
     @PostMapping("/like")
     public ResponseEntity<Void> likeRecipe(@RequestBody LikeRecipeRequest likeRecipeRequest, HttpServletRequest request) {
+        System.out.println("Received like request for userId: {} and recipeId: {}" + likeRecipeRequest.getUserId() + likeRecipeRequest.getRecipeId());
         user.likeRecipe(likeRecipeRequest.getUserId(), likeRecipeRequest.getRecipeId(), jwtUtils.getUserFromRequest(request));
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/like")
     public ResponseEntity<Void> unlikeRecipe(@RequestBody LikeRecipeRequest likeRecipeRequest, HttpServletRequest request) {
+        System.out.println("Received unlike request for userId: {} and recipeId: {}" + likeRecipeRequest.getUserId() + likeRecipeRequest.getRecipeId());
         user.unlikeRecipe(likeRecipeRequest.getUserId(), likeRecipeRequest.getRecipeId(), jwtUtils.getUserFromRequest(request));
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{userId}/favorites")
+    public ResponseEntity<List<Recipe>> getFavoriteRecipes(@PathVariable Long userId, HttpServletRequest request) {
+        User loggedUser = jwtUtils.getUserFromRequest(request);
+        User user = usersRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+        jwtUtils.checkUserLoggedEqualOrAdmin(user, loggedUser); // Assicurati che solo l'utente stesso o un admin possa vedere le ricette preferite
+        List<Recipe> favoriteRecipes = this.user.getFavoriteRecipes(userId);
+        return ResponseEntity.ok(favoriteRecipes);
+    }
+
+
+
 }

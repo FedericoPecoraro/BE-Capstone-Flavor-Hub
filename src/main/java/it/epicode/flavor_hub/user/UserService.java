@@ -23,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -165,6 +162,7 @@ public class UserService {
 
         jwt.checkUserLoggedEqualOrAdmin(user, loggedUser);
         userMapper.updateUser(user, updatedUser);
+        System.out.println("Updating user: " + user);
         usersRepository.save(user);
         return userMapper.entityToDto(user);
     }
@@ -281,4 +279,13 @@ public class UserService {
         user.getLikedRecipes().remove(recipe);
         usersRepository.save(user);
     }
+
+    @Transactional(readOnly = true)
+    public List<Recipe> getFavoriteRecipes(Long userId) {
+        User user = usersRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+        return new ArrayList<>(user.getLikedRecipes());
+    }
+
+
 }

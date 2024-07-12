@@ -1,5 +1,6 @@
 package it.epicode.flavor_hub.recipe;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.epicode.flavor_hub.ingredient.Ingredient;
 import it.epicode.flavor_hub.tag.Tag;
 import it.epicode.flavor_hub.user.User;
@@ -31,6 +32,7 @@ public class Recipe {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @ManyToMany
@@ -52,5 +54,7 @@ public class Recipe {
     private List<Tag> tags;
 
     @ManyToMany(mappedBy = "likedRecipes")
+    @JsonIgnore
     private List<User> likedByUsers;
 }
+

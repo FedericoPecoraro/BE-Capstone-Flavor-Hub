@@ -85,9 +85,11 @@ public class RecipeService {
         repository.delete(entity);
     }
 
-    // Get All Recipes
+    // Get All Recipes con aggiunta di likedRecipes
     public List<RecipeResponse> getAllRecipes() {
         List<Recipe> recipes = repository.findAll();
+        List<Recipe> likedRecipes = repository.findLikedRecipes();
+        recipes.addAll(likedRecipes);
         return recipeMapper.entitiesToDtos(recipes);
     }
 

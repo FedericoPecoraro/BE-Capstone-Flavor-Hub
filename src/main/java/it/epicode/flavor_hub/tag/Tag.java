@@ -1,5 +1,6 @@
 package it.epicode.flavor_hub.tag;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.epicode.flavor_hub.recipe.Recipe;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -19,5 +20,6 @@ public class Tag {
     private String name;
 
     @ManyToMany(mappedBy = "tags")
+    @JsonIgnore
     private List<Recipe> recipes;
 }

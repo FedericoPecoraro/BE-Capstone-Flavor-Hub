@@ -2,7 +2,6 @@ package it.epicode.flavor_hub.recipe;
 
 import it.epicode.flavor_hub.ingredient.IngredientResponse;
 import it.epicode.flavor_hub.security.JwtUtils;
-import it.epicode.flavor_hub.tag.Tag;
 import it.epicode.flavor_hub.tag.TagResponse;
 import it.epicode.flavor_hub.user.User;
 import it.epicode.flavor_hub.user.UserService;
@@ -40,7 +39,6 @@ public class RecipeController {
     // Edit Recipe
     @PutMapping("/{id}")
     public ResponseEntity<RecipeResponse> editRecipe(@PathVariable Long id, @RequestBody RecipeRequest recipeRequest, HttpServletRequest request) {
-
         RecipeResponse updatedRecipe = recipeService.editRecipe(id, recipeRequest, jwt.getUserFromRequest(request));
         return ResponseEntity.ok(updatedRecipe);
     }
@@ -67,15 +65,12 @@ public class RecipeController {
         return ResponseEntity.ok(recipes);
     }
 
-
-
-    // Aggiungi questo metodo al RecipeController
+    // Get Recipe by ID
     @GetMapping("/{id}")
     public ResponseEntity<RecipeResponse> getRecipeById(@PathVariable Long id) {
         RecipeResponse recipe = recipeService.getRecipeById(id);
         return ResponseEntity.ok(recipe);
     }
-
 
     @GetMapping("/ingredients")
     public ResponseEntity<List<IngredientResponse>> getIngredients() {
@@ -119,19 +114,19 @@ public class RecipeController {
 
     @GetMapping("/vegan")
     public ResponseEntity<List<RecipeResponse>> getVeganRecipes() {
-        List<RecipeResponse> recipes = recipeService.getRecipesByTagId(VEGAN_TAG_ID);
+        List<RecipeResponse> recipes = recipeService.getVeganRecipes();
         return ResponseEntity.ok(recipes);
     }
 
     @GetMapping("/vegetarian")
     public ResponseEntity<List<RecipeResponse>> getVegetarianRecipes() {
-        List<RecipeResponse> recipes = recipeService.getRecipesByTagId(VEGETARIAN_TAG_ID);
+        List<RecipeResponse> recipes = recipeService.getVegetarianRecipes();
         return ResponseEntity.ok(recipes);
     }
 
     @GetMapping("/glutenFree")
     public ResponseEntity<List<RecipeResponse>> getGlutenFreeRecipes() {
-        List<RecipeResponse> recipes = recipeService.getRecipesByTagId(GLUTEN_FREE_TAG_ID);
+        List<RecipeResponse> recipes = recipeService.getGlutenFreeRecipes();
         return ResponseEntity.ok(recipes);
     }
 

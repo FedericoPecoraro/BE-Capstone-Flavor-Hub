@@ -65,7 +65,6 @@ public class RecipeService {
         jwt.checkUserLoggedEqualOrAdmin(entity.getUser(), loggedUser);
         recipeMapper.updateRecipe(entity, recipeRequest);
         repository.save(entity);
-
         return recipeMapper.entityToDto(entity);
     }
 
@@ -98,14 +97,12 @@ public class RecipeService {
         return recipeMapper.entitiesToDtos(recipes);
     }
 
-
-    // Aggiungi questo metodo al RecipeService
+    // Get Recipe by ID
     public RecipeResponse getRecipeById(Long id) {
         Recipe recipe = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ricetta non trovata"));
         return recipeMapper.entityToDto(recipe);
     }
-
 
     // Get All Ingredients
     public List<IngredientResponse> getAllIngredients() {
@@ -148,13 +145,33 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
+    // Get Recipes by Tag ID
+    public List<RecipeResponse> getRecipesByTagId(Long tagId) {
+        Tag tag = tagRepository.findById(tagId)
+                .orElseThrow(() -> new EntityNotFoundException("Tag not found with id: " + tagId));
+        List<Recipe> recipes = repository.findByTag(tag);
+        return recipeMapper.entitiesToDtos(recipes);
+    }
+
+    public List<RecipeResponse> getVeganRecipes() {
+        return getRecipesByTagId(1L); // Assumendo che l'ID del tag Vegan sia 1
+    }
+
+    public List<RecipeResponse> getVegetarianRecipes() {
+        return getRecipesByTagId(2L); // Assumendo che l'ID del tag Vegetarian sia 2
+    }
+
+    public List<RecipeResponse> getGlutenFreeRecipes() {
+        return getRecipesByTagId(3L); // Assumendo che l'ID del tag Gluten Free sia 3
+    }
+
     // Get Recipe by Name
     public List<RecipeResponse> getRecipeByName(String query) {
         List<Recipe> recipes = repository.fullTextSearchRecipe(query.toLowerCase());
         return recipeMapper.entitiesToDtos(recipes);
     }
 
-    // Get Recipe by User
+    // Get Recipes by User
     public List<RecipeResponse> getRecipesByUser(User user) {
         List<Recipe> recipes = repository.findByUser(user);
         return recipes.stream().map(recipe -> {
@@ -164,46 +181,22 @@ public class RecipeService {
         }).collect(Collectors.toList());
     }
 
-    // Get Recipe by Tag
-    public List<RecipeResponse> getRecipesByTagId(Long tagId) {
-        Tag tag = tagRepository.findById(tagId)
-                .orElseThrow(() -> new EntityNotFoundException("Tag not found with id: " + tagId));
-        List<Recipe> recipes = repository.findByTag(tag);
-        return recipes.stream().map(recipe -> {
-            RecipeResponse recipeResponse = new RecipeResponse();
-            BeanUtils.copyProperties(recipe, recipeResponse);
-            return recipeResponse;
-        }).collect(Collectors.toList());
-    }
-
-    // Get Recipe by Utensil
+    // Get Recipes by Utensil
     public List<RecipeResponse> getRecipesByUtensil(String utensil) {
         List<Recipe> recipes = repository.findByUtensil(utensil);
-        return recipes.stream().map(recipe -> {
-            RecipeResponse recipeResponse = new RecipeResponse();
-            BeanUtils.copyProperties(recipe, recipeResponse);
-            return recipeResponse;
-        }).collect(Collectors.toList());
+        return recipeMapper.entitiesToDtos(recipes);
     }
 
-    // Get Recipe by Ingredient
+    // Get Recipes by Ingredient
     public List<RecipeResponse> getRecipesByIngredient(String ingredientName) {
         List<Recipe> recipes = repository.findByIngredient(ingredientName);
-        return recipes.stream().map(recipe -> {
-            RecipeResponse recipeResponse = new RecipeResponse();
-            BeanUtils.copyProperties(recipe, recipeResponse);
-            return recipeResponse;
-        }).collect(Collectors.toList());
+        return recipeMapper.entitiesToDtos(recipes);
     }
 
-    // Get Recipe by Time
+    // Get Recipes by Time
     public List<RecipeResponse> getRecipesByTime(int maxTime) {
         List<Recipe> recipes = repository.findByTime(maxTime);
-        return recipes.stream().map(recipe -> {
-            RecipeResponse recipeResponse = new RecipeResponse();
-            BeanUtils.copyProperties(recipe, recipeResponse);
-            return recipeResponse;
-        }).collect(Collectors.toList());
+        return recipeMapper.entitiesToDtos(recipes);
     }
 
     // Upload Recipe Image
